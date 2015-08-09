@@ -1,10 +1,3 @@
-/*
- * PerspectiveTransform.cpp
- *
- *  Created on: May 24, 2015
- *      Author: Nikola
- */
-
 #include "PerspectiveTransform.h"
 #include "ImageRGB.h"
 #include <stdio.h>
@@ -50,14 +43,29 @@ void unwrapImage(const Matrix &src, Matrix &dst,
                 A[6]*sVec3[0] + A[7]*sVec3[1] + A[8]*sVec3[2],
             };
 
-            int dx = dVec3[0]/dVec3[2];
-            int dy = dVec3[1]/dVec3[2];
+            float dx = dVec3[0]/dVec3[2];
+            float dy = dVec3[1]/dVec3[2];
 
-            if((0 > dy || dy > src.nRows) ||
-               (0 > dx || dx > src.nCols))
+            if((1 > dy || dy > src.nRows-1) ||
+               (1 > dx || dx > src.nCols-1)) {
+                *dst(y, x) = 0;
                 continue;
+            }
 
-            *dst(y, x) = *src(dy, dx);
+            int idx = Real2Int(dx);
+            int idy = Real2Int(dy);
+
+            float wx1 = dx-idx;
+            float wx2 = 1.0f - wx1;
+            float wy1 = dy-idy;
+            float wy2 = 1.0f - wy1;
+
+            float sum = *src(idy, idx)*(wx1*wy1)   +
+                        *src(idy+1, idx)*(wx1*wy2) +
+                        *src(idy, idx+1)*(wx2*wy1) +
+                        *src(idy+1, idx+1)*(wx2*wy2);
+
+            *dst(y, x) = sum;
         }
     }
 
