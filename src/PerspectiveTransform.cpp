@@ -29,38 +29,38 @@ destinationsPoints((Vec2[])
 }
 PerspectiveTransform::~PerspectiveTransform() { }
 
-ImageRGB PerspectiveTransform::unwrapImage(ImageRGB &img, int dWidth, int dHeight)
+void unwrapImage(const Matrix &src, Matrix &dst,
+                 const PerspectiveTransform &trasf)
 {
+    if(dst.nCols == 0 || dst.nRows == 0) {
+        return;
+    }
 
-    ImageRGB unwraped(dWidth, dHeight, dWidth*img.getNChanels());
-    Matrix A = transform;
-    for (int x = 0; x < unwraped.getWidth(); ++x)
+    const float * A  = trasf.getTransform().element(0,0);
+
+    for(int x = 0 ; x < dst.nCols ; x++)
     {
-        for (int y = 0; y < unwraped.getHeight(); ++y)
+        for(int y = 0 ; y < dst.nRows ; y++)
         {
             float sVec3[3] = { float(x), float(y), 1.0f };
             float dVec3[3] =
             {
-                *A.element(0, 0)*sVec3[0] + *A.element(0, 1)*sVec3[1] + *A.element(0, 2)*sVec3[2],
-                *A.element(1, 0)*sVec3[0] + *A.element(1, 1)*sVec3[1] + *A.element(1, 2)*sVec3[2],
-                *A.element(2, 0)*sVec3[0] + *A.element(2, 1)*sVec3[1] + *A.element(2, 2)*sVec3[2],
+                A[0]*sVec3[0] + A[1]*sVec3[1] + A[2]*sVec3[2],
+                A[3]*sVec3[0] + A[4]*sVec3[1] + A[5]*sVec3[2],
+                A[6]*sVec3[0] + A[7]*sVec3[1] + A[8]*sVec3[2],
             };
-
-            if(dVec3[0] < 0 || dVec3[0] >= img.getWidth()
-                    || dVec3[1] < 0 || dVec3[1] >= img.getHeight()) continue;
 
             int dx = dVec3[0]/dVec3[2];
             int dy = dVec3[1]/dVec3[2];
 
-            unsigned char *src = img.getPixel(dx, dy);
-            unsigned char *dest = unwraped.getPixel(x, y);
-            dest[0]=src[0];
-            dest[1]=src[1];
-            dest[2]=src[2];
+            if((0 > dy || dy > src.nRows) ||
+               (0 > dx || dx > src.nCols))
+                continue;
 
+            *dst(y, x) = *src(dy, dx);
         }
     }
-    return unwraped;
+
 }
 
 void PerspectiveTransform::createTransform(

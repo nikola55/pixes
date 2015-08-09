@@ -16,17 +16,17 @@ public:
 
     PerspectiveTransform(Vec2 sp1, Vec2 sp2, Vec2 sp3, Vec2 sp4,
                          Vec2 dp1, Vec2 dp2, Vec2 dp3, Vec2 dp4);
+
     virtual ~PerspectiveTransform();
 
-    Matrix getTransform() const
+    const Matrix& getTransform() const
     {
         return transform;
     }
-    Matrix getInverseTransform() const
+    const Matrix& getInverseTransform() const
     {
         return inverseTransform;
     }
-    ImageRGB unwrapImage(ImageRGB &, int dWidth, int dHeight);
 
 private:
 
@@ -39,6 +39,9 @@ private:
     Matrix transform;
     Matrix inverseTransform;
 };
+
+void unwrapImage(const Matrix &src, Matrix &dst,
+                 const PerspectiveTransform &trasf);
 
 } /* namespace pix */
 
