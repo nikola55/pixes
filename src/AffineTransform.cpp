@@ -33,8 +33,7 @@ inline float nearestNeighbour(float sx, float sy, const pix::Matrix &si)
 { 
 	int ix = Real2Int(sx);
 	int iy = Real2Int(sy);
-	float dx = sx-ix;
-	float dy = sy-iy;
+	return *si(iy, ix);
 }
 inline float bicubic(float sx, float sy, const pix::Matrix &si){ return 0.0f; }
 
