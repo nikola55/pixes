@@ -64,4 +64,23 @@ void convolve(const Matrix &img, const Matrix &k, Matrix &gray)
         }
     }
 }
+
+void convolveSeparable(const Matrix &src, 
+					   Matrix &dst, 
+					   const Matrix &vk, 
+					   const Matrix &hk
+					   )
+{
+	if(src.nRows != dst.nRows ||
+	   src.nCols != dst.nCols)
+	{
+		return;
+	}
+	
+	Matrix work(src.nRows, src.nCols, 0.0f);
+	convolve(src, vk, work);
+	convolve(work, hk, dst);
+	
+}
+
 } /* namespace pix */

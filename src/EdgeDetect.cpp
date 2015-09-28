@@ -34,15 +34,18 @@ static const pix::Matrix sobelHorizontalKernel_h(1, 3, sobelHorizontal_h);
 
 static void sobelDetect(const pix::Matrix &src, pix::Matrix &dst)
 {
-    pix::Matrix work = pix::Matrix(src.nRows, src.nCols);
     pix::Matrix workV = pix::Matrix(src.nRows, src.nCols);
     pix::Matrix workH = pix::Matrix(src.nRows, src.nCols);
 
-    convolve(src, sobelVerticalKernel_v, work);
-    convolve(work, sobelVerticalKernel_h, workV);
+    convolveSeparable(src, workV, 
+					  sobelVerticalKernel_v, 
+					  sobelVerticalKernel_h
+				      );
 
-    convolve(src, sobelHorizontalKernel_v, work);
-    convolve(work, sobelHorizontalKernel_h, workH);
+    convolveSeparable(src, workH, 
+					  sobelHorizontalKernel_v, 
+					  sobelHorizontalKernel_h
+				      );
 
     for (int x = 0; x < src.nCols; ++x)
     {
