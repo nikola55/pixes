@@ -1,7 +1,8 @@
 #include "HoughTransform.h"
 #include "Matrix.h"
-#include <math.h>
-
+#include <cmath>
+#include <algorithm>
+#include <iostream>
 namespace pix
 {
 
@@ -49,7 +50,7 @@ void getNormalLines(const HoughAccumulator &a, int threshold, std::vector<Normal
         {
             int val = a.getValue(r, theta);
             if (val > threshold && isMaxIn(a, r, theta, a.getAngleQuantization(), 15, val))
-            {
+            {	
                 normalLines.push_back(NormalLine2(r - a.getMaxR()/2, theta-90));
             }
         }
@@ -145,74 +146,86 @@ inline Vec2 trimToY(Vec2 p, Vec2 d, float ty)
     return Vec2((p.x) + (-(((p.y) - (ty)) / (d.y)))*((d.x)), (ty));
 }
 
-HoughAccumulator::HoughAccumulator()
-{
-    init(0,0,0,0,-1,(unsigned int*)0);
-}
-
 HoughAccumulator::~HoughAccumulator()
 {
     delete[] data;
 }
 
 HoughAccumulator::
-HoughAccumulator(
-               int maxR, int maxTheta,
+HoughAccumulator(int maxR, int maxTheta,
                int targetWidth, int targetHeight,
-               int angleQuantization)
+               int angleQuantization
+			   )
 {
     init(maxR, maxTheta, targetWidth,
-         targetHeight, -1,
-         new unsigned int[maxR*maxTheta]);
+         targetHeight, -1, angleQuantization,
+         new unsigned int[maxR*maxTheta]
+		 );
+		 
     for (int i = 0; i < maxR*maxTheta; ++i)
     {
         data[i]=0;
     }
-    this->angleQuantization = angleQuantization;
 }
 
 HoughAccumulator::
 HoughAccumulator(const HoughAccumulator &a)
 {
+
     init(a.maxR, a.maxTheta, a.targetWidth,
-         a.targetHeight, a.maxVal,
-         new unsigned int[maxR*maxTheta]);
-    copyValues(a);
+         a.targetHeight, a.maxVal, a.angleQuantization,
+         new unsigned int[a.maxR*a.maxTheta]
+		 );
+
+	std::copy(&a.data[0], &a.data[a.maxR*a.maxTheta], data);
 }
 
 HoughAccumulator& HoughAccumulator
 ::operator=(const HoughAccumulator &a)
 {
-    delete []data;
+    
+	delete []data;
     init(a.maxR, a.maxTheta, a.targetWidth,
-         a.targetHeight, a.maxVal,
-         new unsigned int[maxR*maxTheta]);
-    copyValues(a);
+         a.targetHeight, a.maxVal, a.angleQuantization,
+         new unsigned int[a.maxR*a.maxTheta]
+		 );
+
+	std::copy(&a.data[0], &a.data[a.maxR*a.maxTheta], data);
     return *this;
+}
+
+
+HoughAccumulator::HoughAccumulator()
+{
+    init(0,0,0,0,-1,1,(unsigned int*)0);
 }
 
 void HoughAccumulator
 ::init(int maxR, int maxTheta, int targetWidth,
-       int targetHeight, int maxVal, unsigned int *data)
+       int targetHeight, int maxVal, int angleQuantization,
+	   unsigned int *data)
 {
-    this->maxR = maxR;
+    // std::cout << "init(" << 
+			// maxR << ", " << 
+			// maxTheta << ", " << 
+			// targetWidth << ", " << 
+			// targetHeight << ", " << 
+			// "data" << ", " << 
+			// maxVal << ")" <<  std::endl;
+	
+	this->maxR = maxR;
     this->maxTheta = maxTheta;
     this->targetWidth = targetWidth;
     this->targetHeight = targetHeight;
     this->data = data;
     this->maxVal = maxVal;
+	this->angleQuantization = angleQuantization;
 }
 
 void HoughAccumulator
 ::copyValues(const HoughAccumulator &a)
 {
-    for (int r = 0; r < a.maxR; ++r)
-    {
-        for (int t = 0; t < a.maxTheta; ++t)
-        {
-            *(data + (r*maxTheta+t)) = *(a.data+ (r*maxTheta+t));
-        }
-    }
+	std::copy(&a.data[0], &a.data[a.maxR*a.maxTheta], data);
 }
 
 } /* namespace pix */

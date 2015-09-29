@@ -1,10 +1,3 @@
-/*
- * HoughTransform.h
- *
- *  Created on: May 23, 2015
- *      Author: Nikola
- */
-
 #ifndef FEATURE_DETECTION_HOUGHTRANSFORM_H_
 #define FEATURE_DETECTION_HOUGHTRANSFORM_H_
 
@@ -62,7 +55,11 @@ public:
 
 private:
 
-    void init(int maxR, int maxTheta, int targetWidth, int targetHeight, int maxVal, unsigned int *data);
+    void init(int maxR, int maxTheta, 
+			int targetWidth, int targetHeight, 
+			int maxVal, int angleQuantization, 
+			unsigned int *data
+			);
     void copyValues(const HoughAccumulator &a);
 
     int maxR;

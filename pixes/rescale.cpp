@@ -4,9 +4,7 @@
 
 #include <cstdlib>
 
-#include <Matrix.h>
-#include <ImageIO.h>
-#include <AffineTransform.h>
+#include <Pixes.h>
 
 using namespace std;
 using namespace pix;
