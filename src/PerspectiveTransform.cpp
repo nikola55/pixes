@@ -1,3 +1,10 @@
+/*
+ * PerspectiveTransform.cpp
+ *
+ *  Created on: May 24, 2015
+ *      Author: Nikola
+ */
+
 #include "PerspectiveTransform.h"
 #include "ImageRGB.h"
 #include <stdio.h>
@@ -22,53 +29,34 @@ destinationsPoints((Vec2[])
 }
 PerspectiveTransform::~PerspectiveTransform() { }
 
-void unwrapImage(const Matrix &src, Matrix &dst,
-                 const PerspectiveTransform &trasf)
+void PerspectiveTransform::unwrapImage(const Matrix &src, Matrix &dest)
 {
-    if(dst.nCols == 0 || dst.nRows == 0) {
-        return;
-    }
-
-    const float * A  = trasf.getTransform().element(0,0);
-
-    for(int x = 0 ; x < dst.nCols ; x++)
+	if(dest.nRows == 0 && dest.nCols == 0)
+		return;
+	
+    Matrix &A = transform;
+    for (int x = 0; x < dest.nCols; ++x)
     {
-        for(int y = 0 ; y < dst.nRows ; y++)
+        for (int y = 0; y < dest.nRows; ++y)
         {
             float sVec3[3] = { float(x), float(y), 1.0f };
             float dVec3[3] =
             {
-                A[0]*sVec3[0] + A[1]*sVec3[1] + A[2]*sVec3[2],
-                A[3]*sVec3[0] + A[4]*sVec3[1] + A[5]*sVec3[2],
-                A[6]*sVec3[0] + A[7]*sVec3[1] + A[8]*sVec3[2],
+                *A.element(0, 0)*sVec3[0] + *A.element(0, 1)*sVec3[1] + *A.element(0, 2)*sVec3[2],
+                *A.element(1, 0)*sVec3[0] + *A.element(1, 1)*sVec3[1] + *A.element(1, 2)*sVec3[2],
+                *A.element(2, 0)*sVec3[0] + *A.element(2, 1)*sVec3[1] + *A.element(2, 2)*sVec3[2],
             };
 
-            float dx = dVec3[0]/dVec3[2];
-            float dy = dVec3[1]/dVec3[2];
+            if(dVec3[0] < 0 || dVec3[0] >= src.nCols || 
+			   dVec3[1] < 0 || dVec3[1] >= src.nRows) continue;
 
-            if((1 > dy || dy > src.nRows-1) ||
-               (1 > dx || dx > src.nCols-1)) {
-                *dst(y, x) = 0;
-                continue;
-            }
+            int dx = dVec3[0]/dVec3[2];
+            int dy = dVec3[1]/dVec3[2];
 
-            int idx = Real2Int(dx);
-            int idy = Real2Int(dy);
+            *dest(y, x) = *src(dy, dx);
 
-            float wx1 = dx-idx;
-            float wx2 = 1.0f - wx1;
-            float wy1 = dy-idy;
-            float wy2 = 1.0f - wy1;
-
-            float sum = *src(idy, idx)*(wx1*wy1)   +
-                        *src(idy+1, idx)*(wx1*wy2) +
-                        *src(idy, idx+1)*(wx2*wy1) +
-                        *src(idy+1, idx+1)*(wx2*wy2);
-
-            *dst(y, x) = sum;
         }
     }
-
 }
 
 void PerspectiveTransform::createTransform(

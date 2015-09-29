@@ -112,7 +112,6 @@ public:
     int theta;
 };
 
-
 typedef double lreal;
 typedef float  real;
 typedef unsigned long uint32;
@@ -138,7 +137,7 @@ inline int32 Real2Int(lreal val)
 	return val;
 #else
 	val		= val + _double2fixmagic;
-	return ((int32*)&val)[iman_] >> _shiftamt;
+	return ((int32*)&val)[iman_] >> _shiftamt; 
 #endif
 }
 
@@ -154,5 +153,7 @@ inline int32 Real2Int(real val)
 #endif
 }
 
+inline float fastabs(float f) 
+{int i=((*(int*)&f)&0x7fffffff);return (*(float*)&i);}
 
 #endif /* STRUCTS_MISC_H_ */

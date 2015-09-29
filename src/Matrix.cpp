@@ -45,6 +45,10 @@ Matrix Matrix::inverse(const Matrix &A)
             *AI.element(i,j)=gsl_matrix_get(gsl_AI, i, j);
         }
     }
+	
+	gsl_matrix_free(gsl_A);
+	gsl_matrix_free(gsl_AI);
+	
     return AI;
 }
 
@@ -71,12 +75,18 @@ Matrix Matrix::solveLU(const Matrix &A, const Matrix &b)
     int s;
     gsl_linalg_LU_decomp (gsl_A, p, &s);
     gsl_linalg_LU_solve (gsl_A, p, gsl_b, gsl_solVec);
-
+	gsl_permutation_free(p);
+	
     Matrix solVec(A.nRows, 1);
     for (int i = 0; i < solVec.nRows; ++i)
     {
         *solVec.element(i, 0) = gsl_vector_get(gsl_solVec, i);
     }
+	
+	gsl_matrix_free(gsl_A);
+	gsl_vector_free(gsl_b);
+	gsl_vector_free(gsl_solVec);
+	
     return solVec;
 }
 
