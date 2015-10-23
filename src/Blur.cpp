@@ -1,31 +1,37 @@
 #include "ConvolveUtils.h"
 #include "Matrix.h"
 #include <cmath>
+#include <vector>
 
-static const float gaussian_15_v[15] = {
-	-0.062279,                                                                                                                                                                                                              
-	-0.064104,                                                                                                                                                                                                              
-	-0.065691,                                                                                                                                                                                                              
-	-0.067018,                                                                                                                                                                                                              
-	-0.068068,                                                                                                                                                                                                              
-	-0.068829,                                                                                                                                                                                                              
-	-0.069289,                                                                                                                                                                                                              
-	-0.069443,                                                                                                                                                                                                              
-	-0.069289,                                                                                                                                                                                                              
-	-0.068829,                                                                                                                                                                                                              
-	-0.068068,                                                                                                                                                                                                              
-	-0.067018,                                                                                                                                                                                                              
-	-0.065691,                                                                                                                                                                                                              
-	-0.064104,                                                                                                                                                                                                              
-	-0.062279
-};
+inline double g(double x, double m, double s) {
+	double dx = x-m;
+	return exp(-(dx*dx/2.0*s*s));
+}
 
-static const float gaussian_15_h[15] = {
-	 -0.062279,  -0.064104,  -0.065691,  -0.067018,  -0.068068,  -0.068829,  -0.069289,  -0.069443,  -0.069289,  -0.068829,  -0.068068,  -0.067018,  -0.065691,  -0.064104,  -0.062279,
-};
+void mkKernel(int len, float * vals) {
+	
+	float sigma = 1.0;
+	float mean = 0.0;
+	len += 1;
+	// https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule
+	float stx = -3*sigma;
+    float enx = 3*sigma;
+	float inc = (enx-stx) / len;
+	
+	for(int i = 1 ; i < len ; i++) {
+		vals[i-1] = g(stx+i*inc, mean, sigma);
+	}
+	
+	// normalize to one
+	float sum = 0.0;
+	for(int i = 0 ; i < len - 1 ; i++)
+		sum += vals[i];
+	
+	for(int i = 0 ; i < len - 1 ; i++)
+		vals[i] /= sum;
+	
+}
 
-static const pix::Matrix gaussian15Kernel_v(15, 1, gaussian_15_v);
-static const pix::Matrix gaussian15Kernel_h(1, 15, gaussian_15_h);
 
 void gaussian(const pix::Matrix &src, pix::Matrix &dst, 
 			  const pix::Matrix &vk, const pix::Matrix &hk
@@ -34,14 +40,17 @@ void gaussian(const pix::Matrix &src, pix::Matrix &dst,
 	 convolveSeparable(src, dst, vk, hk);
 }
 
-void pix::blur(const Matrix &src, Matrix &dst, BlurType t)
+void pix::blur(const Matrix &src, Matrix &dst, int sz)
 {
-	switch(t) {
-		case GAUSSIAN_15x15:
-			gaussian(src, dst, gaussian15Kernel_v, gaussian15Kernel_h);
-			break;
-		default:
-			break;
-	}
+	if(!(sz&1)) return;
+	
+	std::vector<float> v(sz);
+	mkKernel(sz, &v[0]);
+	
+	Matrix vk(sz, 1, &v[0]);
+	Matrix hk(1, sz, &v[0]);
+	
+	gaussian(src, dst, vk, hk);
+	
 }
 

@@ -19,11 +19,7 @@ void convolveSeparable(const Matrix &src,
 
 void edgeDetect(const Matrix &, Matrix &, EdgeDetectType type);
 
-enum BlurType {
-	GAUSSIAN_15x15
-};
-
-void blur(const Matrix &src, Matrix &dst, BlurType t);
+void blur(const Matrix &src, Matrix &dst, int sz);
 
 }
 
