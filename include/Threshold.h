@@ -7,7 +7,8 @@ namespace pix
 class Matrix;
 
 enum ThresholdType {
-	CLUSTERING
+	CLUSTERING,
+	OTSU
 };
 
 struct ThresholdParams {
